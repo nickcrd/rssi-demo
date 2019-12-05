@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MA | RSSI Checker</title>
+  <script src="./kalman.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+  			  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  			  crossorigin="anonymous"></script>
+
+</head>
+<body>
+  <div style="width:600px;height:600px;text-align:center;marign:auto">
+    <h1 id="rssi">RSSI: Loading...</h1>
+    <canvas id="myChart" width="400" height="400"></canvas>
+  </div>
+<script>
+  var ctx = document.getElementById('myChart');
+  var data = [];
+
+  var kalmanFilter = new KalmanFilter();
+
+  var scatterChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          datasets: [{
+              label: 'RSSI',
+              data: data,
+          }]
+      },
+      options: {
+          scales: {
+            xAxes: [{
+                type: 'time',
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Date'
+                },
+                ticks: {
+                  major: {
+                    fontStyle: 'bold',
+                    fontColor: '#FF0000'
+                  }
+                }
+              }],
+              yAxes: [{
+                  type: 'linear',
+                  suggestedMin: -120,
+                  suggestedMax: 120
+              }]
+          }
+      }
+  });
+
+  function addData(data) {
+    scatterChart.data.datasets[0].data.push(data);
+    scatterChart.update();
+
+    $("#rssi").text("RSSI: " + data.y);
+  }
+
+  function updateData() {
+      $.ajax({
+        url: "http://172.16.4.50/getdata",
+        success: function( result ) {
+          result.y = kalmanFilter.filter(result.y);
+          addData(result)
+        }
+    });
+  }
+
+  window.setInterval(updateData, 200)
+
+</script>
+
+</body>
+</html>
