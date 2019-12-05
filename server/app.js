@@ -1,8 +1,14 @@
+/*
+  (c) 2019 nickcrd
+  https://nickcrd.dev/
+*/
+
 const noble = require('noble');
 const express = require('express');
 
 var app = express();
 
+// only for testing purposes to see if the concept works or not
 var latestValuePair = {};
 
 app.get('/getdata', function(req, res) {
@@ -16,6 +22,7 @@ app.listen(80, function() {
 
 
 noble.on('discover', function(peripheral) {
+  // hardcoded address for testing purposes
   if (peripheral.address === "f4:0f:24:19:33:10")
   {
     latestValuePair = {x: new Date(), y: peripheral.rssi}
